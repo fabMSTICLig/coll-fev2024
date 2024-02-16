@@ -3,14 +3,17 @@
 #include <Wire.h>
 #include "rgb_lcd.h"
 
-
 //define PIN
 #define SOUND_SENSOR_PIN  A2
 #define LED_PIN  A0
 
 //define params
 #define LED_COUNT 3
- 
+
+// coll-fev2024
+
+//Projets réalisés au Fablab Mastic (UGA) par les collegiens accueillis lors du stage 3eme organisé par Persyval 
+
 // define colors
 #define RED 1 
 #define GREEN 2
@@ -18,7 +21,7 @@
 #define NOPE 0
 
 
-//Variable temps du dernier clap(pour mesurer le temps quil rest avant de compter)
+//Variable temps du dernier clap(pour mesurer le temps quil reste avant de compter)
 long timeLastClap = 0;
 
 //Variable compte le nombre de claps sur un court laps de temps
@@ -33,7 +36,9 @@ rgb_lcd lcd;
 // Variables pour manipuler les servo-moteurs
 Servo myservo_roue_1;
 Servo myservo_roue_2;
-  //Servo myservo_roue_bras;
+
+Servo myservo_bras;
+
 
 void setup() 
 {
@@ -47,14 +52,19 @@ void setup()
 
     myservo_roue_1.attach(5);
     myservo_roue_2.attach(6);
-    
+    myservo_bras.attach(3);
+
+    myservo_bras.write(10);
+
     // initialisation ecran LCD
     lcd.begin(16, 2);
     lcd.setRGB(255, 255, 255);
+
     lcd.print("setup OK");
-    
+    delay(500);
 }
 
+//fonction pour recuperer le volume sonore
 int get_sound_value(void)
 {
     int soundValue = 0;
@@ -67,6 +77,7 @@ int get_sound_value(void)
     return (soundValue); 
 }
 
+//fonction pour appliquer une couleur aux leds
 void set_leds_colors(int color)
 {
     int32_t col = strip.Color(0, 0, 0);
@@ -90,8 +101,10 @@ void set_leds_colors(int color)
     strip.show();
 }
 
+//fonction dance
 void dancing(void)
 {
+  Serial.println("fonction Dancing ...");  
   myservo_roue_1.write(80);
   myservo_roue_2.write(80);
   delay(300);
@@ -100,23 +113,66 @@ void dancing(void)
   delay(1000);
   myservo_roue_1.write(90);
   myservo_roue_2.write(90);
-
+  delay(2000);
+  printLCD("Dance...");
+  Serial.println("fonction Dancing END");
 }
 
-void printLCD(char *str)
+//fonction pour ecrire une phrase sur l'ecran
+void printLCD(const char *str)
 {
           lcd.clear();
           lcd.home();
           lcd.print(str);
 }
 
+//fonction pour faire un check: lever le bras et tourner
+void fonction_check(void)
+{
+  Serial.println("fonction check ...");  
+  if (nombreDeClape == 1)
+  {
+    myservo_bras.write(90);
+    delay(2000);
+    myservo_roue_1.write(85);
+    myservo_roue_2.write(95);
+    delay(1000);
+    myservo_bras.write(10);
+    myservo_roue_1.write(90);
+    myservo_roue_2.write(90);
+  }
+  else if (nombreDeClape == 2)
+  {
+    myservo_bras.write(90);
+    delay(2000);
+    myservo_roue_2.write(90);
+    delay(2000);
+    myservo_bras.write(10);
+  }
+  else if (nombreDeClape >= 3)
+  {
+    myservo_bras.write(90);
+    delay(2000);
+    myservo_roue_1.write(90);
+    delay(2000);
+    myservo_roue_2.write(90);
+    delay(2000);
+    myservo_bras.write(10);
+  }
+  delay(1000);
+  Serial.println("fonction check END");
+}
+
 void loop()
 {
     int soundValue = get_sound_value();
-    if (soundValue > 600)
+    Serial.print("Sound value > ");
+    Serial.println(soundValue);
+
+    // si un pic de son est detecté:
+    if (soundValue > 30)
     {
-        Serial.print(" ||||||||||||||||| ");
-        Serial.println(soundValue);
+        Serial.print(" ||||||| CLAP |||||||||| ");
         timeLastClap = millis();
         nombreDeClape += 1;
         if (nombreDeClape == 1)
@@ -132,31 +188,33 @@ void loop()
             printLCD("3 Clapes.");
         }
     }
-    
-
+    // si un (ou plusieur) clape a ete entendu et que le temps d'attente est ecoulé
     if (nombreDeClape != 0 && millis() - timeLastClap > 1200) // temps d'attente écoulé
     {
         if (nombreDeClape == 1)
         {
             Serial.println("nombreDeClape == 1");
             set_leds_colors(RED);
+            fonction_check();
+            dancing();
             printLCD("Bien Joue");
         }
         else if (nombreDeClape == 2)
         {
             Serial.println("nombreDeClape == 2");
             set_leds_colors(BLUE);
- 
+            fonction_check();
+            dancing();
             printLCD("Pas Mal");
         }
         else if (nombreDeClape >= 3)
         {
-            Serial.print("nombre de clape: ");
+            Serial.print("nombreDeClape: ");
             Serial.println(nombreDeClape);
-            
             set_leds_colors(GREEN);
-            printLCD("Excellent!");
+            fonction_check();
             dancing();
+            printLCD("Excellent!");
         }
         timeLastClap = 0;
         nombreDeClape = 0;
