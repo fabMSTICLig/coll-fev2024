@@ -60,8 +60,8 @@ void setup()
     lcd.begin(16, 2);
     lcd.setRGB(255, 255, 255);
 
-    lcd.print("setup OK");
     delay(500);
+    lcd.print("setup OK");
 }
 
 //fonction pour recuperer le volume sonore
@@ -101,65 +101,74 @@ void set_leds_colors(int color)
     strip.show();
 }
 
-//fonction dance
+//fonction pour faire 'dancer' le robot
 void dancing(void)
 {
   Serial.println("fonction Dancing ...");  
+  printLCD("Dance...");
   myservo_roue_1.write(80);
   myservo_roue_2.write(80);
   delay(300);
   myservo_roue_1.write(100);
   myservo_roue_2.write(100);
-  delay(1000);
+  delay(300);
+  myservo_roue_1.write(80);
+  myservo_roue_2.write(100);
+  delay(200);
+  myservo_roue_1.write(80);
+  myservo_roue_2.write(100);
+  delay(200);
   myservo_roue_1.write(90);
   myservo_roue_2.write(90);
-  delay(2000);
-  printLCD("Dance...");
+  delay(500);
   Serial.println("fonction Dancing END");
 }
 
 //fonction pour ecrire une phrase sur l'ecran
 void printLCD(const char *str)
 {
-          lcd.clear();
-          lcd.home();
-          lcd.print(str);
+  lcd.clear();
+  lcd.home();
+  lcd.print(str);
 }
 
 //fonction pour faire un check: lever le bras et tourner
 void fonction_check(void)
 {
-  Serial.println("fonction check ...");  
-  if (nombreDeClape == 1)
-  {
+  Serial.println("fonction check ...");
+//  if (nombreDeClape == 1)
+//  {
     myservo_bras.write(90);
-    delay(2000);
+    delay(200);
     myservo_roue_1.write(85);
     myservo_roue_2.write(95);
-    delay(1000);
+    delay(300);
+    myservo_roue_1.write(95);
+    myservo_roue_2.write(85);
+    delay(300);
     myservo_bras.write(10);
     myservo_roue_1.write(90);
     myservo_roue_2.write(90);
-  }
-  else if (nombreDeClape == 2)
-  {
-    myservo_bras.write(90);
-    delay(2000);
-    myservo_roue_2.write(90);
-    delay(2000);
-    myservo_bras.write(10);
-  }
-  else if (nombreDeClape >= 3)
-  {
-    myservo_bras.write(90);
-    delay(2000);
-    myservo_roue_1.write(90);
-    delay(2000);
-    myservo_roue_2.write(90);
-    delay(2000);
-    myservo_bras.write(10);
-  }
-  delay(1000);
+//  }
+//  else if (nombreDeClape == 2)
+//  {
+//    myservo_bras.write(90);
+//    delay(2000);
+//    myservo_roue_2.write(90);
+//    delay(2000);
+//    myservo_bras.write(10);
+//  }
+//  else if (nombreDeClape >= 3)
+//  {
+//    myservo_bras.write(90);
+//    delay(2000);
+//    myservo_roue_1.write(90);
+//    delay(2000);
+//    myservo_roue_2.write(90);
+//    delay(2000);
+//    myservo_bras.write(10);
+//  }
+  delay(500);
   Serial.println("fonction check END");
 }
 
@@ -170,7 +179,7 @@ void loop()
     Serial.println(soundValue);
 
     // si un pic de son est detecté:
-    if (soundValue > 30)
+    if (soundValue > 600)
     {
         Serial.print(" ||||||| CLAP |||||||||| ");
         timeLastClap = millis();
