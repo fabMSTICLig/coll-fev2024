@@ -1,18 +1,17 @@
+// coll-fev2024
+//Projets réalisés au Fablab MASTIC (UGA) par les collegiens accueillis lors du stage 3eme organisé par Persyval en fevrier 2024
+
 #include <Servo.h>
 #include <Adafruit_NeoPixel.h>
 #include <Wire.h>
 #include "rgb_lcd.h"
 
 //define PIN
-#define SOUND_SENSOR_PIN  A2
-#define LED_PIN  A0
+#define SOUND_SENSOR_PIN  A1
+#define LED_PIN  A2
 
 //define params
 #define LED_COUNT 3
-
-// coll-fev2024
-
-//Projets réalisés au Fablab Mastic (UGA) par les collegiens accueillis lors du stage 3eme organisé par Persyval 
 
 // define colors
 #define RED 1 
@@ -21,7 +20,7 @@
 #define NOPE 0
 
 
-//Variable temps du dernier clap(pour mesurer le temps quil reste avant de compter)
+//Variable temps du dernier clap(pour mesurer le temps qu'il reste avant d'arreter de compter les clapes)
 long timeLastClap = 0;
 
 //Variable compte le nombre de claps sur un court laps de temps
@@ -50,11 +49,14 @@ void setup()
     strip.show();
     strip.setBrightness(50);
 
+    // initialisation des servo moteurs
     myservo_roue_1.attach(5);
     myservo_roue_2.attach(6);
     myservo_bras.attach(3);
 
     myservo_bras.write(10);
+    myservo_roue_1.write(90);
+    myservo_roue_2.write(90);
 
     // initialisation ecran LCD
     lcd.begin(16, 2);
@@ -73,8 +75,15 @@ int get_sound_value(void)
         soundValue += analogRead(SOUND_SENSOR_PIN);
     }
     soundValue >>= 5;
-//    Serial.println(soundValue);
     return (soundValue); 
+}
+
+//fonction pour ecrire une phrase sur l'ecran LCD
+void printLCD(const char *str)
+{
+  lcd.clear();
+  lcd.home();
+  lcd.print(str);
 }
 
 //fonction pour appliquer une couleur aux leds
@@ -108,68 +117,43 @@ void dancing(void)
   printLCD("Dance...");
   myservo_roue_1.write(80);
   myservo_roue_2.write(80);
-  delay(300);
+  delay(600);
   myservo_roue_1.write(100);
   myservo_roue_2.write(100);
-  delay(300);
+  delay(600);
   myservo_roue_1.write(80);
   myservo_roue_2.write(100);
-  delay(200);
+  delay(500);
   myservo_roue_1.write(80);
   myservo_roue_2.write(100);
-  delay(200);
+  delay(600);
   myservo_roue_1.write(90);
   myservo_roue_2.write(90);
-  delay(500);
+  delay(1000);
   Serial.println("fonction Dancing END");
-}
-
-//fonction pour ecrire une phrase sur l'ecran
-void printLCD(const char *str)
-{
-  lcd.clear();
-  lcd.home();
-  lcd.print(str);
+  
 }
 
 //fonction pour faire un check: lever le bras et tourner
 void fonction_check(void)
 {
-  Serial.println("fonction check ...");
-//  if (nombreDeClape == 1)
-//  {
+    Serial.println("fonction check ...");
+    printLCD("Check...");
+
     myservo_bras.write(90);
-    delay(200);
-    myservo_roue_1.write(85);
-    myservo_roue_2.write(95);
-    delay(300);
-    myservo_roue_1.write(95);
-    myservo_roue_2.write(85);
-    delay(300);
+    delay(400);
+    myservo_roue_1.write(80);
+    myservo_roue_2.write(80);
+    delay(800);
+    myservo_roue_1.write(100);
+    myservo_roue_2.write(100);
+    delay(800);
     myservo_bras.write(10);
     myservo_roue_1.write(90);
+    delay(100);
     myservo_roue_2.write(90);
-//  }
-//  else if (nombreDeClape == 2)
-//  {
-//    myservo_bras.write(90);
-//    delay(2000);
-//    myservo_roue_2.write(90);
-//    delay(2000);
-//    myservo_bras.write(10);
-//  }
-//  else if (nombreDeClape >= 3)
-//  {
-//    myservo_bras.write(90);
-//    delay(2000);
-//    myservo_roue_1.write(90);
-//    delay(2000);
-//    myservo_roue_2.write(90);
-//    delay(2000);
-//    myservo_bras.write(10);
-//  }
-  delay(500);
-  Serial.println("fonction check END");
+    delay(500);
+    Serial.println("fonction check END");
 }
 
 void loop()
@@ -179,7 +163,7 @@ void loop()
     Serial.println(soundValue);
 
     // si un pic de son est detecté:
-    if (soundValue > 600)
+    if (soundValue > 500)
     {
         Serial.print(" ||||||| CLAP |||||||||| ");
         timeLastClap = millis();
@@ -197,8 +181,8 @@ void loop()
             printLCD("3 Clapes.");
         }
     }
-    // si un (ou plusieur) clape a ete entendu et que le temps d'attente est ecoulé
-    if (nombreDeClape != 0 && millis() - timeLastClap > 1200) // temps d'attente écoulé
+    // si un (ou plusieur) clape a ete entendu et que le temps d'attente (1200 ms) est ecoulé
+    if (nombreDeClape != 0 && millis() - timeLastClap > 1200)
     {
         if (nombreDeClape == 1)
         {
